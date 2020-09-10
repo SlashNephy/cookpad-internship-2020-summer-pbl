@@ -7,9 +7,9 @@ import kotlinx.html.*
 import java.security.MessageDigest
 import javax.xml.bind.DatatypeConverter
 
-data class LoginSession(val name: String)
+data class LoginSession(val id: Int, val username: String)
 
-val ExampleSession = LoginSession("testuser")
+val ExampleSession = LoginSession(0, "user_0")
 private const val salt = "c68e64b2d83502b6ff1150db31b6dd28ea6944a3c9f9c3af2f18b9ce9f05b04dc53080be9a5c3c9cc3048efa35086d124441ab81bdda79f534605f6c9a5effc1"
 
 fun hashPassword(password: String): String {
@@ -40,7 +40,7 @@ fun Routing.session() {
     get("/signup") {
         call.respondHtml {
             head {
-                title("サインアップ | すごいブログサービス")
+                title("サインアップ | Cooklog")
             }
             body {
                 div {
@@ -83,7 +83,7 @@ fun Routing.session() {
     get("/signin") {
         call.respondHtml {
             head {
-                title("サインイン | すごいブログサービス")
+                title("サインイン | Cooklog")
             }
             body {
                 div {
