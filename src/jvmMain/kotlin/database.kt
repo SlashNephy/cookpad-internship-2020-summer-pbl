@@ -38,12 +38,14 @@ object Articles: IntIdTable() {
     val updatedAt = datetime("updated_at")
 }
 
+private data class Article(val index: Int, val name: String, val category: RecipeCategory)
+
 fun seed() {
     transaction(db) {
         SchemaUtils.drop(Users, Articles)
         SchemaUtils.create(Users, Articles)
 
-        val users = (0..10).map { i ->
+        val users = (0..5).map { i ->
             Users.insertAndGetId {
                 it[name] = "User #$i"
                 it[username] = "user_$i"
@@ -65,22 +67,26 @@ fun seed() {
             }
         }
 
-        listOf(
-            "ツナとキノコのトマトパスタ" to RecipeCategory.Noodle,
-            "肉じゃが" to RecipeCategory.Meat,
-            "明太子パスタ" to RecipeCategory.Noodle,
-            "れんこんサラダ" to RecipeCategory.Vegitable,
-            "鮭の和風ステーキ" to RecipeCategory.Fish,
-            "グリル野菜のバルサミコマリネ" to RecipeCategory.Vegitable,
-            "牛肉しぐれ煮" to RecipeCategory.Meat
-        ).forEachIndexed { i, (name, genre) ->
+        val articles = listOf(
+            Article(0, "ツナとキノコのトマトパスタ", RecipeCategory.Noodle),
+            Article(1, "肉じゃが", RecipeCategory.Meat),
+            Article(2, "明太子パスタ", RecipeCategory.Noodle),
+            Article(3, "れんこんサラダ", RecipeCategory.Vegitable),
+            Article(4, "鮭の和風ステーキ", RecipeCategory.Fish),
+            Article(5, "グリル野菜のバルサミコマリネ", RecipeCategory.Vegitable),
+            Article(6, "牛肉しぐれ煮", RecipeCategory.Meat)
+        )
+
+        repeat(100) { i ->
+            val (index, name, genre) = articles.random()
+
             Articles.insert {
-                it[title] = name
+                it[title] = "$name #$i"
                 it[description] = "かんたんに作れる $name です！"
                 it[category] = genre
                 it[authorId] = users.random().value
 
-                it[imageId] = images[i].value
+                it[imageId] = images[index].value
 
                 it[createdAt] = LocalDateTime.now()
                 it[updatedAt] = LocalDateTime.now()

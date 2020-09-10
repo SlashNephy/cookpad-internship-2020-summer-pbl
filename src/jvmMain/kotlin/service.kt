@@ -4,8 +4,7 @@ import io.ktor.html.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import kotlinx.html.h2
-import kotlinx.html.hr
+import kotlinx.html.*
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -68,7 +67,9 @@ fun Routing.service() {
         }
 
         call.respondHtmlTemplate(CooklogTemplate()) {
-            title = "${user[Users.name]} @${user[Users.username]} さんのページ | Cooklog"
+            val name = "${user[Users.name]} @${user[Users.username]}"
+
+            title = "$name さんのページ | Cooklog"
             contents {
                 requireSession { session ->
                     appendSessionUserHeader(session)
@@ -80,7 +81,64 @@ fun Routing.service() {
 
                 hr()
 
-                h2 { +"${user[Users.name]} @${user[Users.username]} さんのページ" }
+
+                h2 { +"$name さんのページ" }
+
+                div {
+                    canvas {
+                        id = "category-chart"
+                    }
+                    script(src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js") {}
+                    script {
+                        unsafe {
+                            val targetCategories = RecipeCategory.values().filter { it != RecipeCategory.Other }
+                            val categories = targetCategories.joinToString(", ") { "\"${it.description}\"" }
+                            val result = transaction(db) {
+                                Articles.select { Articles.authorId eq user[Users.id].value }.toList()
+                            }.map {
+                                it[Articles.category]
+                            }.groupBy { it }
+                            val data = targetCategories.map {
+                                result[it]?.size ?: 0
+                            }.joinToString(", ")
+
+                            // language=JS
+                            +"""
+const element = document.getElementById("category-chart");
+
+new Chart(element, {
+    type: "radar",
+    data: {
+        labels: [${categories}],
+        datasets: [{
+            label: "投稿された料理のカテゴリ",
+            data: [$data],
+            fill: true,
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgb(54, 162, 235)",
+            pointBackgroundColor: "rgb(54, 162, 235)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(54, 162, 235)"
+        }]
+    },
+    options: {
+        title: {
+            display: false
+        },
+        scale: {
+            ticks: {
+                suggestedMin: 0,
+                suggestedMax: 5,
+                stepSize: 1
+            }
+        }
+    }
+});
+                            """
+                        }
+                    }
+                }
 
                 appendArticles { Articles.authorId eq user[Users.id].value }
             }
