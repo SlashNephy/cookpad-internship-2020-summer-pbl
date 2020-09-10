@@ -54,10 +54,27 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
+                implementation(kotlin("stdlib-jdk8"))
+
                 implementation("io.ktor:ktor-server-netty:1.4.0")
                 implementation("io.ktor:ktor-locations:1.4.0")
                 implementation("io.ktor:ktor-html-builder:1.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2")
+                implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
+
+                // sqlite
+                implementation("org.jetbrains.exposed:exposed-core:0.24.1")
+                implementation("org.jetbrains.exposed:exposed-jdbc:0.24.1")
+                implementation("org.jetbrains.exposed:exposed-java-time:0.24.1")
+                implementation("org.xerial:sqlite-jdbc:3.30.1")
+
+                // logging
+                implementation("io.github.microutils:kotlin-logging:1.8.3")
+                implementation("ch.qos.logback:logback-core:1.2.3")
+                implementation("ch.qos.logback:logback-classic:1.2.3")
+
+                // testing
+                implementation("org.junit.jupiter:junit-jupiter:5.6.2")
             }
         }
         val jvmTest by getting {
