@@ -92,7 +92,7 @@ fun seed() {
             Article(3, "れんこんサラダ", RecipeCategory.Vegitable, false, false, false, true, true),
             Article(4, "鮭の和風ステーキ", RecipeCategory.Fish, false, false, true, false, false),
             Article(5, "グリル野菜のバルサミコマリネ", RecipeCategory.Vegitable, false, false, false, true, true),
-            Article(6, "牛肉しぐれ煮", RecipeCategory.Meat, false, true, true, false, true)
+            Article(6, "牛肉しぐれ煮", RecipeCategory.Meat, false, true, true, false, false)
         )
 
         repeat(100) { i ->
