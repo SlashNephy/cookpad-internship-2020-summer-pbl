@@ -4,7 +4,7 @@ enum class RecipeCategory {
     val description: String
         get() = when (this) {
             Vegitable -> "野菜"
-            Meat -> "肉"
+            Meat -> "肉料理"
             Noodle -> "麺類"
             Fish -> "魚介"
             Other -> "その他"
