@@ -1,118 +1,136 @@
+import io.ktor.application.*
 import io.ktor.html.*
+import io.ktor.util.pipeline.*
 import kotlinx.html.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class CooklogTemplate: Template<HTML> {
+class CooklogTemplate(private val context: PipelineContext<*, ApplicationCall>): Template<HTML> {
     var title = "Cooklog"
-    val contents = Placeholder<BODY>()
+    val contents = Placeholder<DIV>()
 
     override fun HTML.apply() {
+        lang = "ja"
+
         head {
+            meta(charset = "utf-8")
             title(this@CooklogTemplate.title)
+
+            meta(name = "viewport", content = "width=device-width, initial-scale=1, shrink-to-fit=no")
+            link(rel = "stylesheet", href = "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css")
         }
 
         body {
-            h1 {
-                a("/") {
+            nav("navbar navbar-expand-lg navbar-light bg-light") {
+                a("/", classes = "navbar-brand") {
                     +"Cooklog"
                 }
-            }
 
-            insert(contents)
-        }
-    }
-}
+                button(classes = "navbar-toggler", type = ButtonType.button) {
+                    attributes["data-toggle"] = "collapse"
+                    attributes["data-target"] = "#navbar-inner"
 
-fun BODY.appendSessionUserHeader(session: LoginSession) {
-    div {
-        p {
-            +"${session.username} さん、こんにちは。"
-
-            span {
-                a(href = "/my") {
-                    +"マイページ"
+                    span(classes = "navbar-toggler-icon")
                 }
-            }
-            span {
-                +" | "
-            }
-            span {
-                a(href = "/signout") {
-                    +"サインアウト"
-                }
-            }
-        }
-    }
-}
 
-fun BODY.appendAnonymousUserHeader() {
-    div {
-        span {
-            a(href = "/signup") {
-                +"サインアップ"
-            }
-        }
-        span {
-            +" | "
-        }
-        span {
-            a(href = "/signin") {
-                +"サインイン"
-            }
-        }
-    }
-}
+                div("collapse navbar-collapse") {
+                    id = "navbar-inner"
 
-fun BODY.appendCategoryNavBar() {
-    div {
-        nav {
-            ul {
-                RecipeCategory.values().forEach {
-                    li {
-                        a(href = "/category/${it.ordinal}") {
-                            +it.description
+                    ul("navbar-nav mr-auto") {
+                        RecipeCategory.values().forEach {
+                            li("nav-item") {
+                                a("/category/${it.ordinal}", classes = "nav-link") {
+                                    +it.description
+                                }
+                            }
+                        }
+                    }
+
+                    span("navbar-text") {
+                        context.requireSession { session ->
+                            +"@${session.username} さん、こんにちは。"
+
+                            span {
+                                a(href = "/my") {
+                                    +"マイページ"
+                                }
+                            }
+                            span {
+                                +" | "
+                            }
+                            span {
+                                a(href = "/signout") {
+                                    +"サインアウト"
+                                }
+                            }
+                        } or {
+                            span {
+                                a(href = "/signup") {
+                                    +"サインアップ"
+                                }
+                            }
+                            span {
+                                +" | "
+                            }
+                            span {
+                                a(href = "/signin") {
+                                    +"サインイン"
+                                }
+                            }
                         }
                     }
                 }
             }
+
+            script(src = "https://code.jquery.com/jquery-3.5.1.slim.min.js") {}
+            script(src = "https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js") {}
+            script(src = "https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js") {}
+
+            div("container") {
+                insert(contents)
+            }
         }
     }
 }
 
-fun BODY.appendArticles(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) {
-    div {
-        ul {
-            transaction(db) {
-                where.let {
-                    if (it != null) {
-                        Articles.select(it)
-                    } else {
-                        Articles.selectAll()
-                    }
-                }.limit(10)
-                    .orderBy(Articles.updatedAt to SortOrder.ASC)
+fun DIV.appendArticles(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) {
+    div("row row-cols-1 row-cols-md-3") {
+
+        transaction(db) {
+            where.let {
+                if (it != null) {
+                    Articles.select(it)
+                } else {
+                    Articles.selectAll()
+                }
+            }.limit(20)
+                    .orderBy(Articles.updatedAt to SortOrder.DESC)
                     .toList()
-            }.forEach {
-                li {
-                    img(classes = "image", src = "/api/image/${it[Articles.imageId]}")
+        }.forEach {
+            div("col mb-3") {
+                div("card") {
+                    style = "width: 18rem;"
 
-                    h3 {
-                        +it[Articles.title]
-                    }
-                    p {
-                        +"by "
-                        val author = transaction(db) {
-                            Users.select { Users.id eq it[Articles.authorId] }.single()
+                    img(classes = "card-img-top", src = "/api/image/${it[Articles.imageId]}")
+
+                    div("card-body") {
+                        h5("card-title") {
+                            +it[Articles.title]
+                        }
+                        h6("card-subtitle mb-2 text-muted") {
+                            +"by "
+                            val author = transaction(db) {
+                                Users.select { Users.id eq it[Articles.authorId] }.single()
+                            }
+
+                            a("/user/${author[Users.username]}") {
+                                +author[Users.name]
+                            }
                         }
 
-                        a("/user/${author[Users.username]}") {
-                            +author[Users.name]
+                        p("card-text") {
+                            +it[Articles.description]
                         }
-                    }
-
-                    p {
-                        +it[Articles.description]
                     }
                 }
             }
