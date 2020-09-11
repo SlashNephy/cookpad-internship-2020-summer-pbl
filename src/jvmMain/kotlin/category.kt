@@ -22,4 +22,13 @@ enum class Nutrition {
             Mineral -> "ミネラル"
             Vitamin -> "ビタミン"
         }
+
+    val suggestedCategory: RecipeCategory
+        get() = when (this) {
+            Carbohydrates -> listOf(RecipeCategory.Vegitable, RecipeCategory.Noodle).random()
+            Lipid -> RecipeCategory.Meat
+            Protein -> listOf(RecipeCategory.Meat, RecipeCategory.Fish).random()
+            Mineral -> RecipeCategory.Vegitable
+            Vitamin -> RecipeCategory.Vegitable
+        }
 }

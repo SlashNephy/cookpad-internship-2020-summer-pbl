@@ -97,7 +97,45 @@ fun Routing.service() {
                     }
                 }
 
-                div {
+                requireSession {
+                    if (it.username != user[Users.username]) {
+                        return@requireSession
+                    }
+
+                    val nutritions = Nutrition.values().joinToString(", ") { "\"${it.description}\"" }
+                    val result = transaction(db) {
+                        Articles.select { Articles.authorId eq user[Users.id].value }.toList()
+                    }.map {
+                        listOf(it[Articles.carbohydrates], it[Articles.lipid], it[Articles.protein], it[Articles.mineral], it[Articles.vitamin])
+                    }
+                    val carbohydrates = result.count { it[0] }
+                    val lipid = result.count { it[1] }
+                    val protein = result.count { it[2] }
+                    val mineral = result.count { it[3] }
+                    val vitamin = result.count { it[4] }
+                    div("alert alert-warning") {
+                        val minNutrition = when (minOf(carbohydrates, lipid, protein, mineral, vitamin)) {
+                            vitamin -> Nutrition.Vitamin
+                            mineral -> Nutrition.Mineral
+                            carbohydrates -> Nutrition.Carbohydrates
+                            protein -> Nutrition.Protein
+                            else -> Nutrition.Lipid
+                        }
+
+                        +"「"
+                        a("/nutrition/${minNutrition.ordinal}", classes = "alert-link") {
+                            +minNutrition.description
+                        }
+                        +"」の栄養価が少ない傾向があります。"
+
+                        val category = minNutrition.suggestedCategory
+                        a("/category/${category.ordinal}", classes = "alert-link") {
+                            +category.description
+                        }
+                        +" カテゴリの料理がおすすめです！"
+                    }
+
+                    script(src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js") {}
                     canvas {
                         id = "nutrition-chart"
                     }
@@ -105,21 +143,8 @@ fun Routing.service() {
                         id = "category-chart"
                     }
 
-                    script(src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js") {}
                     script {
                         unsafe {
-                            val nutritions = Nutrition.values().joinToString(", ") { "\"${it.description}\"" }
-                            val result = transaction(db) {
-                                Articles.select { Articles.authorId eq user[Users.id].value }.toList()
-                            }.map {
-                                listOf(it[Articles.carbohydrates], it[Articles.lipid], it[Articles.protein], it[Articles.mineral], it[Articles.vitamin])
-                            }
-                            val carbohydrates = result.count { it[0] }
-                            val lipid = result.count { it[1] }
-                            val protein = result.count { it[2] }
-                            val mineral = result.count { it[3] }
-                            val vitamin = result.count { it[4] }
-
                             // language=JS
                             +"""
 new Chart(document.getElementById("nutrition-chart"), {
@@ -203,6 +228,14 @@ new Chart(document.getElementById("category-chart"), {
                     }
                 }
 
+                nav {
+                    ol("breadcrumb") {
+                        li("breadcrumb-item active") {
+                            +"$name さんの投稿"
+                        }
+                    }
+                }
+
                 appendArticles { Articles.authorId eq user[Users.id].value }
             }
         }
@@ -211,6 +244,24 @@ new Chart(document.getElementById("category-chart"), {
     get("/my") {
         requireSession { session ->
             call.respondRedirect("/user/${session.username}")
+        } or {
+            call.respondRedirect("/signin")
+        }
+    }
+
+    get("/article/{id}") {
+        val id = call.parameters["id"]?.toIntOrNull()
+            ?: return@get call.respond(HttpStatusCode.NotFound)
+        val article = transaction(db) {
+            Articles.select { Articles.id eq id }.single()
+        }
+    }
+
+    get("/create") {
+        requireSession { session ->
+            call.respondHtmlTemplate(CooklogTemplate(this)) {
+
+            }
         } or {
             call.respondRedirect("/signin")
         }
