@@ -10,25 +10,17 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Routing.service() {
     get("/") {
-        call.respondHtmlTemplate(CooklogTemplate()) {
+        call.respondHtmlTemplate(CooklogTemplate(this)) {
             contents {
-                requireSession { session ->
-                    appendSessionUserHeader(session)
-                } or {
-                    appendAnonymousUserHeader()
+                nav {
+                    ol("breadcrumb") {
+                        li("breadcrumb-item active") {
+                            +"みんなの新着記事"
+                        }
+                    }
                 }
 
-                appendCategoryNavBar()
-
-                hr()
-
                 appendArticles()
-
-//                div {
-//                    id = "root"
-//                }
-//                script(src = "/static/output.js") {}
-
             }
         }
     }
@@ -39,20 +31,16 @@ fun Routing.service() {
         val category = RecipeCategory.values().getOrNull(index)
             ?: return@get call.respond(HttpStatusCode.NotFound)
 
-        call.respondHtmlTemplate(CooklogTemplate()) {
+        call.respondHtmlTemplate(CooklogTemplate(this)) {
             title = "${category.description} カテゴリ | Cooklog"
             contents {
-                requireSession { session ->
-                    appendSessionUserHeader(session)
-                } or {
-                    appendAnonymousUserHeader()
+                nav {
+                    ol("breadcrumb") {
+                        li("breadcrumb-item active") {
+                            +"${category.description} カテゴリ"
+                        }
+                    }
                 }
-
-                appendCategoryNavBar()
-
-                hr()
-
-                h2 { +"${category.description} カテゴリ" }
 
                 appendArticles { Articles.category eq category }
             }
@@ -66,29 +54,75 @@ fun Routing.service() {
             Users.select { Users.username eq username }.single()
         }
 
-        call.respondHtmlTemplate(CooklogTemplate()) {
+        call.respondHtmlTemplate(CooklogTemplate(this)) {
             val name = "${user[Users.name]} @${user[Users.username]}"
 
             title = "$name さんのページ | Cooklog"
             contents {
-                requireSession { session ->
-                    appendSessionUserHeader(session)
-                } or {
-                    appendAnonymousUserHeader()
+                nav {
+                    ol("breadcrumb") {
+                        li("breadcrumb-item active") {
+                            +"$name さんのページ"
+                        }
+                    }
                 }
-
-                appendCategoryNavBar()
-
-                hr()
-
-
-                h2 { +"$name さんのページ" }
 
                 div {
                     canvas {
+                        id = "nutrition-chart"
+                    }
+                    canvas {
                         id = "category-chart"
                     }
+
                     script(src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js") {}
+                    script {
+                        unsafe {
+                            val result = transaction(db) {
+                                Articles.select { Articles.authorId eq user[Users.id].value }.toList()
+                            }.map {
+                                listOf(it[Articles.carbohydrates], it[Articles.lipid], it[Articles.protein], it[Articles.mineral], it[Articles.vitamin])
+                            }
+                            val carbohydrates = result.count { it[0] }
+                            val lipid = result.count { it[1] }
+                            val protein = result.count { it[2] }
+                            val mineral = result.count { it[3] }
+                            val vitamin = result.count { it[4] }
+
+                            // language=JS
+                            +"""
+new Chart(document.getElementById("nutrition-chart"), {
+    type: "radar",
+    data: {
+        labels: ["炭水化物", "脂質", "たんぱく質", "ミネラル", "ビタミン"],
+        datasets: [{
+            label: "投稿された料理の栄養価チャート",
+            data: [$carbohydrates, $lipid, $protein, $mineral, $vitamin],
+            fill: true,
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgb(255, 99, 132)",
+            pointBackgroundColor: "rgb(255, 99, 132)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgb(255, 99, 132)"
+        }]
+    },
+    options: {
+        title: {
+            display: false
+        },
+        scale: {
+            ticks: {
+                suggestedMin: 0,
+                suggestedMax: 5,
+                stepSize: 1
+            }
+        }
+    }
+});
+                            """
+                        }
+                    }
                     script {
                         unsafe {
                             val targetCategories = RecipeCategory.values().filter { it != RecipeCategory.Other }
@@ -104,14 +138,12 @@ fun Routing.service() {
 
                             // language=JS
                             +"""
-const element = document.getElementById("category-chart");
-
-new Chart(element, {
+new Chart(document.getElementById("category-chart"), {
     type: "radar",
     data: {
         labels: [${categories}],
         datasets: [{
-            label: "投稿された料理のカテゴリ",
+            label: "投稿された料理のカテゴリチャート",
             data: [$data],
             fill: true,
             backgroundColor: "rgba(54, 162, 235, 0.2)",

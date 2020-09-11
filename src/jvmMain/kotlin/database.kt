@@ -34,16 +34,31 @@ object Articles: IntIdTable() {
     val authorId = integer("author_id").references(Users.id)
     val imageId = integer("image_id").references(Images.id)
 
+    val carbohydrates = bool("carbohydrates")
+    val lipid = bool("lipid")
+    val protein = bool("protein")
+    val mineral = bool("mineral")
+    val vitamin = bool("vitamin")
+
     val createdAt = datetime("created_at")
     val updatedAt = datetime("updated_at")
 }
 
-private data class Article(val index: Int, val name: String, val category: RecipeCategory)
+private data class Article(
+        val index: Int,
+        val name: String,
+        val category: RecipeCategory,
+        val carbohydrates: Boolean,
+        val lipid: Boolean,
+        val protein: Boolean,
+        val mineral: Boolean,
+        val vitamin: Boolean
+)
 
 fun seed() {
     transaction(db) {
-        SchemaUtils.drop(Users, Articles)
-        SchemaUtils.create(Users, Articles)
+        SchemaUtils.drop(Users, Images, Articles)
+        SchemaUtils.create(Users, Images, Articles)
 
         val users = (0..5).map { i ->
             Users.insertAndGetId {
@@ -71,25 +86,30 @@ fun seed() {
         }
 
         val articles = listOf(
-            Article(0, "ツナとキノコのトマトパスタ", RecipeCategory.Noodle),
-            Article(1, "肉じゃが", RecipeCategory.Meat),
-            Article(2, "明太子パスタ", RecipeCategory.Noodle),
-            Article(3, "れんこんサラダ", RecipeCategory.Vegitable),
-            Article(4, "鮭の和風ステーキ", RecipeCategory.Fish),
-            Article(5, "グリル野菜のバルサミコマリネ", RecipeCategory.Vegitable),
-            Article(6, "牛肉しぐれ煮", RecipeCategory.Meat)
+            Article(0, "ツナとキノコのトマトパスタ", RecipeCategory.Noodle, true, false, true, false, true),
+            Article(1, "肉じゃが", RecipeCategory.Meat, true, true, true, false, true),
+            Article(2, "明太子パスタ", RecipeCategory.Noodle, true, false, false, false, false),
+            Article(3, "れんこんサラダ", RecipeCategory.Vegitable, false, false, false, true, true),
+            Article(4, "鮭の和風ステーキ", RecipeCategory.Fish, false, false, true, false, false),
+            Article(5, "グリル野菜のバルサミコマリネ", RecipeCategory.Vegitable, false, false, false, true, true),
+            Article(6, "牛肉しぐれ煮", RecipeCategory.Meat, false, true, true, false, true)
         )
 
         repeat(100) { i ->
-            val (index, name, genre) = articles.random()
+            val article = articles.random()
 
             Articles.insert {
-                it[title] = "$name #$i"
-                it[description] = "かんたんに作れる $name です！"
-                it[category] = genre
+                it[title] = "${article.name} #$i"
+                it[description] = "かんたんに作れる ${article.name} です！"
+                it[category] = article.category
                 it[authorId] = users.random().value
+                it[carbohydrates] = article.carbohydrates
+                it[lipid] = article.lipid
+                it[protein] = article.protein
+                it[mineral] = article.mineral
+                it[vitamin] = article.vitamin
 
-                it[imageId] = images[index].value
+                it[imageId] = images[article.index].value
 
                 it[createdAt] = LocalDateTime.now()
                 it[updatedAt] = LocalDateTime.now()
