@@ -60,7 +60,10 @@ fun seed() {
             Images.insertAndGetId {
                 val name = "$i.jpg"
                 it[filename] = name
-                it[body] = this::class.java.classLoader.getResourceAsStream(name).readBytes()
+
+                val resource = this::class.java.classLoader.getResourceAsStream(name)
+                checkNotNull(resource)
+                it[body] = resource.readBytes()
 
                 it[createdAt] = LocalDateTime.now()
                 it[updatedAt] = LocalDateTime.now()
