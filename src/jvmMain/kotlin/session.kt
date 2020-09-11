@@ -38,42 +38,35 @@ fun Routing.session() {
     }
 
     get("/signup") {
-        call.respondHtml {
-            head {
-                title("サインアップ | Cooklog")
-            }
-            body {
-                div {
-                    form(action = "/api/session/signup", method = FormMethod.post) {
-                        ul {
-                            li {
-                                label {
-                                    attributes["for"] = "username"
-                                    +"Username:"
-                                }
-                                input(type = InputType.text) {
-                                    id = "username"
-                                    name = "username"
-                                }
-                            }
+        call.respondHtmlTemplate(CooklogTemplate(this)) {
+            title = "サインアップ | Cooklog"
 
-                            li {
-                                label {
-                                    attributes["for"] = "password"
-                                    +"Password:"
-                                }
-                                input(type = InputType.password) {
-                                    id = "password"
-                                    name = "password"
-                                }
-                            }
-
-                            li {
-                                button(type = ButtonType.submit) {
-                                    +"登録"
-                                }
-                            }
+            contents {
+                form(action = "/api/session/signup", method = FormMethod.post) {
+                    div("form-group") {
+                        label {
+                            attributes["for"] = "username"
+                            +"Username"
                         }
+                        input(classes = "form-control", type = InputType.text) {
+                            id = "username"
+                            name = "username"
+                        }
+                    }
+
+                    div("form-group") {
+                        label {
+                            attributes["for"] = "password"
+                            +"Password:"
+                        }
+                        input(classes = "form-control", type = InputType.password) {
+                            id = "password"
+                            name = "password"
+                        }
+                    }
+
+                    button(type = ButtonType.submit, classes = "btn btn-primary") {
+                        +"サインアップ"
                     }
                 }
             }
@@ -81,42 +74,35 @@ fun Routing.session() {
     }
 
     get("/signin") {
-        call.respondHtml {
-            head {
-                title("サインイン | Cooklog")
-            }
-            body {
-                div {
-                    form(action = "/api/session/signin", method = FormMethod.post) {
-                        ul {
-                            li {
-                                label {
-                                    attributes["for"] = "username"
-                                    +"Username:"
-                                }
-                                input(type = InputType.text) {
-                                    id = "username"
-                                    name = "username"
-                                }
-                            }
+        call.respondHtmlTemplate(CooklogTemplate(this)) {
+            title = "サインイン | Cooklog"
 
-                            li {
-                                label {
-                                    attributes["for"] = "password"
-                                    +"Password:"
-                                }
-                                input(type = InputType.password) {
-                                    id = "password"
-                                    name = "password"
-                                }
-                            }
-
-                            li {
-                                button(type = ButtonType.submit) {
-                                    +"サインイン"
-                                }
-                            }
+            contents {
+                form(action = "/api/session/signin", method = FormMethod.post) {
+                    div("form-group") {
+                        label {
+                            attributes["for"] = "username"
+                            +"Username"
                         }
+                        input(classes = "form-control", type = InputType.text) {
+                            id = "username"
+                            name = "username"
+                        }
+                    }
+
+                    div("form-group") {
+                        label {
+                            attributes["for"] = "password"
+                            +"Password:"
+                        }
+                        input(classes = "form-control", type = InputType.password) {
+                            id = "password"
+                            name = "password"
+                        }
+                    }
+
+                    button(type = ButtonType.submit, classes = "btn btn-primary") {
+                        +"サインイン"
                     }
                 }
             }
