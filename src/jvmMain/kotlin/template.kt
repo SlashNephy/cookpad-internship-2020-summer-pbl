@@ -67,6 +67,14 @@ class CooklogTemplate(private val context: PipelineContext<*, ApplicationCall>):
                                 +" | "
                             }
                             span {
+                                a(href = "/create") {
+                                    +"投稿する"
+                                }
+                            }
+                            span {
+                                +" | "
+                            }
+                            span {
                                 a(href = "/signout") {
                                     +"サインアウト"
                                 }
@@ -123,7 +131,9 @@ fun DIV.appendArticles(where: (SqlExpressionBuilder.() -> Op<Boolean>)? = null) 
 
                     div("card-body") {
                         h5("card-title") {
-                            +it[Articles.title]
+                            a("/article/${it[Articles.id]}", classes = "card-link") {
+                                +it[Articles.title]
+                            }
                         }
                         h6("card-subtitle mb-2 text-muted") {
                             +"by "

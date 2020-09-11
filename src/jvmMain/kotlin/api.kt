@@ -3,9 +3,6 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.sessions.*
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -13,13 +10,7 @@ fun Route.api() {
     route("/api") {
         route("/article") {
             post("/create") {
-                val session = call.sessions.get<LoginSession>() ?: return@post call.respond(HttpStatusCode.Unauthorized)
-
-                transaction(db) {
-                    addLogger(StdOutSqlLogger)
-
-
-                }
+                call.respondRedirect("/my")
             }
         }
 

@@ -260,7 +260,75 @@ new Chart(document.getElementById("category-chart"), {
     get("/create") {
         requireSession { session ->
             call.respondHtmlTemplate(CooklogTemplate(this)) {
+                title = "投稿 | Cooklog"
 
+                contents {
+                    form(action = "/api/article/create", method = FormMethod.post) {
+                        div("form-group") {
+                            label {
+                                attributes["for"] = "title"
+                                +"タイトル"
+                            }
+                            input(classes = "form-control", type = InputType.text) {
+                                id = "title"
+                                name = "title"
+                            }
+                        }
+
+                        div("form-group") {
+                            label {
+                                attributes["for"] = "description"
+                                +"本文:"
+                            }
+                            textArea(classes = "form-control") {
+                                id = "description"
+                                name = "description"
+                            }
+                        }
+
+                        div {
+                            RecipeCategory.values().forEach {
+                                div("form-check form-check-inline") {
+                                    input(InputType.radio, classes = "form-check-input", name = "category") {
+                                        id = "category-${it.ordinal}"
+                                    }
+                                    label("form-check-label") {
+                                        attributes["for"] = "category-${it.ordinal}"
+                                        +it.description
+                                    }
+                                }
+                            }
+                        }
+
+                        div {
+                            Nutrition.values().forEach {
+                                div("form-check form-check-inline") {
+                                    input(InputType.checkBox, classes = "form-check-input", name = "nutrition") {
+                                        id = "nutrition-${it.ordinal}"
+                                    }
+                                    label("form-check-label") {
+                                        attributes["for"] = "nutrition-${it.ordinal}"
+                                        +it.description
+                                    }
+                                }
+                            }
+                        }
+
+                        div("custom-file") {
+                            input(InputType.file, classes = "custom-file-input") {
+                                id = "image"
+                            }
+                            label("custom-file-label") {
+                                attributes["for"] = "image"
+                                +"画像を選択"
+                            }
+                        }
+
+                        button(type = ButtonType.submit, classes = "btn btn-primary") {
+                            +"投稿"
+                        }
+                    }
+                }
             }
         } or {
             call.respondRedirect("/signin")
