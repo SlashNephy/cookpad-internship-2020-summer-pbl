@@ -44,6 +44,14 @@ class CooklogTemplate(private val context: PipelineContext<*, ApplicationCall>):
                                 }
                             }
                         }
+
+                        Nutrition.values().forEach {
+                            li("nav-item") {
+                                a("/nutrition/${it.ordinal}", classes = "nav-link") {
+                                    +it.description
+                                }
+                            }
+                        }
                     }
 
                     span("navbar-text") {

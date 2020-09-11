@@ -10,3 +10,16 @@ enum class RecipeCategory {
             Other -> "その他"
         }
 }
+
+enum class Nutrition {
+    Carbohydrates, Lipid, Protein, Mineral, Vitamin;
+
+    val description: String
+        get() = when (this) {
+            Carbohydrates -> "炭水化物"
+            Lipid -> "脂質"
+            Protein -> "たんぱく質"
+            Mineral -> "ミネラル"
+            Vitamin -> "ビタミン"
+        }
+}

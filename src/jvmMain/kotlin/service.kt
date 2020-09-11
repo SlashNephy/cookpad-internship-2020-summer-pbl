@@ -47,6 +47,36 @@ fun Routing.service() {
         }
     }
 
+    get("/nutrition/{index}") {
+        val index = call.parameters["index"]?.toIntOrNull()
+            ?: return@get call.respond(HttpStatusCode.NotFound)
+        val nutrition = Nutrition.values().getOrNull(index)
+            ?: return@get call.respond(HttpStatusCode.NotFound)
+
+        call.respondHtmlTemplate(CooklogTemplate(this)) {
+            title = "${nutrition.description} カテゴリ | Cooklog"
+            contents {
+                nav {
+                    ol("breadcrumb") {
+                        li("breadcrumb-item active") {
+                            +"${nutrition.description} カテゴリ"
+                        }
+                    }
+                }
+
+                appendArticles {
+                    when (nutrition) {
+                        Nutrition.Carbohydrates -> Articles.carbohydrates eq true
+                        Nutrition.Lipid -> Articles.lipid eq true
+                        Nutrition.Protein -> Articles.protein eq true
+                        Nutrition.Mineral -> Articles.mineral eq true
+                        Nutrition.Vitamin -> Articles.vitamin eq true
+                    }
+                }
+            }
+        }
+    }
+
     get("/user/{username}") {
         val username = call.parameters["username"]
             ?: return@get call.respond(HttpStatusCode.NotFound)
@@ -78,6 +108,7 @@ fun Routing.service() {
                     script(src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.min.js") {}
                     script {
                         unsafe {
+                            val nutritions = Nutrition.values().joinToString(", ") { "\"${it.description}\"" }
                             val result = transaction(db) {
                                 Articles.select { Articles.authorId eq user[Users.id].value }.toList()
                             }.map {
@@ -94,7 +125,7 @@ fun Routing.service() {
 new Chart(document.getElementById("nutrition-chart"), {
     type: "radar",
     data: {
-        labels: ["炭水化物", "脂質", "たんぱく質", "ミネラル", "ビタミン"],
+        labels: [$nutritions],
         datasets: [{
             label: "投稿された料理の栄養価チャート",
             data: [$carbohydrates, $lipid, $protein, $mineral, $vitamin],
