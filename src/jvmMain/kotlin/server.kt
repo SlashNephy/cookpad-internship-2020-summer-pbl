@@ -8,8 +8,6 @@ import io.ktor.sessions.*
 
 
 fun main() {
-    seed()
-
     embeddedServer(Netty, port = 8090, host = "127.0.0.1") {
         install(CallLogging)
         install(Sessions) {
