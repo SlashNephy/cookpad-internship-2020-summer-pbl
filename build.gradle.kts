@@ -69,7 +69,7 @@ kotlin {
                 implementation("org.xerial:sqlite-jdbc:3.30.1")
 
                 // logging
-                implementation("io.github.microutils:kotlin-logging:1.8.3")
+                implementation("io.github.microutils:kotlin-logging:1.12.5")
                 implementation("ch.qos.logback:logback-core:1.2.3")
                 implementation("ch.qos.logback:logback-classic:1.2.3")
 
