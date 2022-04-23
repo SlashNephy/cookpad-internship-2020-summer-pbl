@@ -59,7 +59,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-netty:1.4.0")
                 implementation("io.ktor:ktor-locations:1.4.0")
                 implementation("io.ktor:ktor-html-builder:1.4.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:0.7.5")
                 implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
 
                 // sqlite
