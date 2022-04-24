@@ -71,7 +71,7 @@ kotlin {
                 // logging
                 implementation("io.github.microutils:kotlin-logging:1.8.3")
                 implementation("ch.qos.logback:logback-core:1.2.11")
-                implementation("ch.qos.logback:logback-classic:1.2.3")
+                implementation("ch.qos.logback:logback-classic:1.2.11")
 
                 // testing
                 implementation("org.junit.jupiter:junit-jupiter:5.6.2")
