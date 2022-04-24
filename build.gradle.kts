@@ -63,7 +63,7 @@ kotlin {
                 implementation("com.vladsch.flexmark:flexmark-all:0.62.2")
 
                 // sqlite
-                implementation("org.jetbrains.exposed:exposed-core:0.24.1")
+                implementation("org.jetbrains.exposed:exposed-core:0.38.2")
                 implementation("org.jetbrains.exposed:exposed-jdbc:0.24.1")
                 implementation("org.jetbrains.exposed:exposed-java-time:0.24.1")
                 implementation("org.xerial:sqlite-jdbc:3.30.1")
